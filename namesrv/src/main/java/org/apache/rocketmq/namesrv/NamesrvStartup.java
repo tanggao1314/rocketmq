@@ -48,11 +48,15 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController main0(String[] args) {
+        // 系统属性  版本号设置
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
         try {
             //PackageConflictDetect.detectFastjson();
 
+            // 定义命令
             Options options = ServerUtil.buildCommandlineOptions(new Options());
+
+            // 解析命令
             commandLine = ServerUtil.parseCmdLine("mqnamesrv", args, buildCommandlineOptions(options), new PosixParser());
             if (null == commandLine) {
                 System.exit(-1);
@@ -62,13 +66,19 @@ public class NamesrvStartup {
             final NamesrvConfig namesrvConfig = new NamesrvConfig();
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(9876);
+
+            // 询问(使用)命令
             if (commandLine.hasOption('c')) {
+                // 指定了命令选项参数-c 则读取配置文件
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {
                     InputStream in = new BufferedInputStream(new FileInputStream(file));
                     properties = new Properties();
                     properties.load(in);
+
+                    // 填充配置文件中的属性到 namesrvConfig
                     MixAll.properties2Object(properties, namesrvConfig);
+                    // 填充配置文件中的属性到 nettyServerConfig
                     MixAll.properties2Object(properties, nettyServerConfig);
 
                     namesrvConfig.setConfigStorePath(file);
@@ -78,12 +88,14 @@ public class NamesrvStartup {
                 }
             }
 
+            // 指定了启动选项命令参数 -p  则打印配置后正常结束应用 说明该选项只是查看一下NameServer相关配置
             if (commandLine.hasOption('p')) {
                 MixAll.printObjectProperties(null, namesrvConfig);
                 MixAll.printObjectProperties(null, nettyServerConfig);
                 System.exit(0);
             }
 
+            // 填充命令中的属性到namesrvConfig 比如 例 --listenPort 9876
             MixAll.properties2Object(ServerUtil.commandLine2Properties(commandLine), namesrvConfig);
 
             if (null == namesrvConfig.getRocketmqHome()) {
@@ -91,6 +103,7 @@ public class NamesrvStartup {
                 System.exit(-2);
             }
 
+            // 日志打印相关配置读取
             LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
             JoranConfigurator configurator = new JoranConfigurator();
             configurator.setContext(lc);
@@ -101,17 +114,23 @@ public class NamesrvStartup {
             MixAll.printObjectProperties(log, namesrvConfig);
             MixAll.printObjectProperties(log, nettyServerConfig);
 
+            // 通过 namesrvConfig和 nettyServerConfig 配置创建 NamesrvController实例
+            // NameServerController实例为 NameServer核心控制器
             final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
-            // remember all configs to prevent discard
+            // remember all configs to prevent discard 记住所有配置以防止丢弃
             controller.getConfiguration().registerConfig(properties);
 
+            // 初始化 NamesrvController实例
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();
                 System.exit(-3);
             }
 
+            // 注册 JVM 钩子函数
+            // 展示一种常用的编程技巧，如果代码中使用了线程池，一种优雅停机的方式就是注册 JVM 钩子函数，
+            // 在JVM 进程 关闭之前，先将线程池关闭 及时释放资源
             Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
@@ -120,6 +139,7 @@ public class NamesrvStartup {
                 }
             }));
 
+            // 启动服务器， 以便监昕 Broker 、消息生产者的网络请求
             controller.start();
 
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
