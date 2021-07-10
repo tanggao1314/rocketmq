@@ -49,10 +49,32 @@ public class RouteInfoManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
     private final static long BROKER_CHANNEL_EXPIRED_TIME = 1000 * 60 * 2;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    /**
+     *  保存的是主题和队列信息，其中每个队列信息对应的类 QueueData 中，还保存了 brokerName。
+     */
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
+
+    /**
+     *  保存了集群中每个 brokerName 对应 Broker 信息，每个 Broker 信息用一个 BrokerData 对象表示,
+     *  BrokerData`中保存了集群名称cluster，brokerName 和一个保存Broker物理地址的 Map：brokerAddrs，
+     *  它的Key是BrokerID，Value就是这个BrokerID对应的Broker的物理地址。
+     */
     private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
+
+    /**
+     *  保存的是集群名称与 BrokerName 的对应关系
+     */
     private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;
+
+    /**
+     *  保存了每个 Broker 当前的动态信息，包括心跳更新时间，路由数据版本等等
+     */
     private final HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable;
+
+    /**
+     *  保存了每个 Broker 对应的消息过滤服务的地址，用于服务端消息过滤
+     */
     private final HashMap<String/* brokerAddr */, List<String>/* Filter Server */> filterServerTable;
 
     public RouteInfoManager() {
