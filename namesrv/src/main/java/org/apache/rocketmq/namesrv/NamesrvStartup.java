@@ -38,6 +38,7 @@ import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//https://cloud.tencent.com/developer/article/1706509
 public class NamesrvStartup {
     public static Properties properties = null;
     public static CommandLine commandLine = null;
