@@ -53,6 +53,7 @@ public class BrokerStartup {
     public static Logger log;
 
     public static void main(String[] args) {
+
         start(createBrokerController(args));
     }
 
