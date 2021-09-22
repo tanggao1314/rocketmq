@@ -189,12 +189,15 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline()
                             .addLast(defaultEventExecutorGroup, HANDSHAKE_HANDLER_NAME,
+                                // 握手的
                                 new HandshakeHandler(TlsSystemConfig.tlsMode))
                             .addLast(defaultEventExecutorGroup,
                                 new NettyEncoder(),
                                 new NettyDecoder(),
                                 new IdleStateHandler(0, 0, nettyServerConfig.getServerChannelMaxIdleTimeSeconds()),
+                                // 主要作用是根据channel的状态来触发不同的事件，事件的类型定义在NettyEventType这个枚举中，分为CONNECT、CLOSE、IDLE、EXCEPTION四个事件类型，而这些事件的监听器是在构造NamesrvController时创建的BrokerHousekeepingService，BrokerHousekeepingService的作用是在接收到CLOSE、IDLE、EXCEPTION三个事件时调用RouteInfoManager的onChannelDestroy方法释放一些资源
                                 new NettyConnectManageHandler(),
+                                // 真正处理请求的handler
                                 new NettyServerHandler()
                             );
                     }

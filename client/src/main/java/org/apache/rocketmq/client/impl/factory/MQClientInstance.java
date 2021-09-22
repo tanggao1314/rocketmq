@@ -232,11 +232,11 @@ public class MQClientInstance {
                     }
                     // Start request-response channel
                     this.mQClientAPIImpl.start();
-                    // Start various schedule tasks
+                    // Start various schedule tasks  --> do MQClientInstance.this.mQClientAPIImpl.fetchNameServerAddr()
                     this.startScheduledTask();
-                    // Start pull service
+                    // Start pull service  --> do PullMessageService.run
                     this.pullMessageService.start();
-                    // Start rebalance service
+                    // Start rebalance service --> do RebalanceService.run
                     this.rebalanceService.start();
                     // Start push service
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);

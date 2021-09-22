@@ -81,6 +81,7 @@ public class PullMessageService extends ServiceThread {
 
     @Override
     public void run() {
+        // org.apache.rocketmq.client.impl.factory.MQClientInstance.start 调用 this.pullMessageService.start();
         log.info(this.getServiceName() + " service started");
 
         while (!this.isStopped()) {
