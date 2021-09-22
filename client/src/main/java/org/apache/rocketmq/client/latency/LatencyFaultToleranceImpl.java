@@ -72,8 +72,9 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         }
 
         if (!tmpList.isEmpty()) {
+            // 先打乱
             Collections.shuffle(tmpList);
-
+            // 再排序
             Collections.sort(tmpList);
 
             final int half = tmpList.size() / 2;

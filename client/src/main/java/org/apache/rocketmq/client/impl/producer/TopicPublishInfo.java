@@ -67,6 +67,7 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue(final String lastBrokerName) {
+        // 上次发送失败的brokerName , lastBrokerName
         if (lastBrokerName == null) {
             return selectOneMessageQueue();
         } else {
@@ -76,6 +77,7 @@ public class TopicPublishInfo {
                 if (pos < 0)
                     pos = 0;
                 MessageQueue mq = this.messageQueueList.get(pos);
+                // 选择不是上次发送失败的broker
                 if (!mq.getBrokerName().equals(lastBrokerName)) {
                     return mq;
                 }
@@ -85,10 +87,13 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue() {
+        // 计数器加一
         int index = this.sendWhichQueue.getAndIncrement();
+        // 取模
         int pos = Math.abs(index) % this.messageQueueList.size();
         if (pos < 0)
             pos = 0;
+        // 轮询的方式获取队列
         return this.messageQueueList.get(pos);
     }
 
